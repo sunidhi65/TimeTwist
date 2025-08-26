@@ -121,6 +121,7 @@ export interface LeaderboardPageProps {
 export interface ProfilePageProps {
     user: User;
     onNavigate: (view: View) => void;
+    onUpdateUser: (view: View) => void;
     onChangeBranch: () => void;
 }
 
