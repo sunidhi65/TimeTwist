@@ -1,43 +1,37 @@
-
-
 import React, { useState } from 'react';
-import { ResourcesPageProps, Subject, View, ResourceCategory, Resource } from '../../types';
-import { SUBJECTS_BY_STREAM } from '../../data/challenges';
+import { ResourcesPageProps, Subject, View, Resource } from '../../types';
+import { BRANCH_SUBJECTS } from '../../data/challenges';
 import { RESOURCES_DATA } from '../../data/resources';
+import { SAMPLE_PAPERS_DATA } from '../../data/samplePapers';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
+import VideoIcon from '../icons/VideoIcon';
+import ArticleIcon from '../icons/ArticleIcon';
+import BookIcon from '../icons/BookIcon';
+import InteractiveIcon from '../icons/InteractiveIcon';
+import LibraryIcon from '../icons/LibraryIcon';
 
-const AccordionItem: React.FC<{ title: string; children: React.ReactNode; isOpen: boolean; onClick: () => void; }> = ({ title, children, isOpen, onClick }) => {
-    return (
-        <div style={{border: '1px solid rgba(192, 132, 252, 0.3)', borderRadius: '0.5rem', overflow: 'hidden'}}>
-            <button
-                onClick={onClick}
-                style={{width: '100%', padding: '1rem', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'rgba(44, 31, 74, 0.3)', transition: 'background-color 0.2s', border: 'none', color: 'inherit', cursor: 'pointer'}}
-            >
-                <h3 style={{fontSize: '1.25rem', fontWeight: 700, color: 'var(--rune-gold)'}}>{title}</h3>
-                <span style={{transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s', color: 'var(--rune-gold)', fontSize: '1.5rem'}}>
-                    {isOpen ? '-' : '+'}
-                </span>
-            </button>
-            <div style={{transition: 'max-height 0.5s ease-in-out', maxHeight: isOpen ? '1000px' : '0', overflow: 'hidden'}}>
-                 <div style={{padding: '1rem', backgroundColor: 'rgba(26, 17, 47, 0.5)', borderTop: '1px solid rgba(192, 132, 252, 0.2)'}}>
-                    {children}
-                </div>
-            </div>
-        </div>
-    );
-};
+
+const ResourceTypeIcon: React.FC<{ type: Resource['type'] }> = ({ type }) => {
+    switch (type) {
+        case 'video': return <VideoIcon />;
+        case 'article': return <ArticleIcon />;
+        case 'book': return <BookIcon />;
+        case 'interactive': return <InteractiveIcon />;
+        default: return null;
+    }
+}
+
 
 const ResourcesPage: React.FC<ResourcesPageProps> = ({ user, onNavigate }) => {
-    const availableSubjects = user.stream ? SUBJECTS_BY_STREAM[user.stream] : [];
-    const [selectedSubject, setSelectedSubject] = useState<Subject>(availableSubjects[0] || 'Math');
-    const [openCategory, setOpenCategory] = useState<string | null>(null);
+    const availableSubjects = BRANCH_SUBJECTS[user.branch!];
+    const [selectedSubject, setSelectedSubject] = useState<Subject>(availableSubjects[0]);
 
-    const toggleCategory = (categoryName: string) => {
-        setOpenCategory(openCategory === categoryName ? null : categoryName);
-    };
-
-    const resourcesForSubject = RESOURCES_DATA[selectedSubject] || [];
+    const resourcesForSubject = RESOURCES_DATA[selectedSubject];
+    const learningResourcesContent = resourcesForSubject?.flatMap(category => category.resources) || [];
+    
+    const papersForCollege = SAMPLE_PAPERS_DATA[user.college] || {};
+    const papersForSubject = papersForCollege[selectedSubject] || [];
 
     return (
         <div>
@@ -45,55 +39,84 @@ const ResourcesPage: React.FC<ResourcesPageProps> = ({ user, onNavigate }) => {
                 &larr; Back to Dashboard
             </Button>
             <div className="text-center mb-10">
-                <h1 className="font-pixel" style={{fontSize: '3rem', color: 'var(--rune-gold)'}}>The Wizard's Library</h1>
-                <p style={{color: 'rgba(216, 180, 254, 0.8)', marginTop: '0.5rem'}}>Ancient knowledge and helpful guides await you.</p>
+                <h1 className="text-5xl font-bold font-pixel text-rune-gold">The Digital Library</h1>
+                <p className="text-purple-300/80 mt-2">Curated resources for your branch: {user.branch}.</p>
             </div>
+            
+            <div className="resources-layout">
+                {/* Sidebar Navigation */}
+                <aside className="resources-sidebar">
+                    <Card className="p-4">
+                        <h2 className="font-fantasy">Subjects</h2>
+                        <div className="resources-sidebar-list">
+                            {availableSubjects.map(subject => (
+                                <button
+                                    key={subject}
+                                    onClick={() => setSelectedSubject(subject)}
+                                    className={`sidebar-btn ${selectedSubject === subject ? 'active' : ''}`}
+                                >
+                                    {subject}
+                                </button>
+                            ))}
+                        </div>
+                    </Card>
+                </aside>
 
-            <Card style={{padding: '1rem'}}>
-                <div style={{marginBottom: '1.5rem', borderBottom: '1px solid rgba(192, 132, 252, 0.3)', display: 'flex', flexWrap: 'wrap', justifyContent: 'center'}}>
-                    {availableSubjects.map((subject: Subject) => (
-                        <button
-                            key={subject}
-                            onClick={() => {
-                                setSelectedSubject(subject);
-                                setOpenCategory(null);
-                            }}
-                            style={{padding: '0.75rem 1.5rem', fontSize: '1.125rem', fontWeight: 700, transition: 'color 0.2s', background: 'none', border: 'none', cursor: 'pointer', borderBottom: selectedSubject === subject ? '2px solid var(--rune-gold)' : '2px solid transparent', color: selectedSubject === subject ? 'var(--rune-gold)' : '#d1d5db'}}
-                        >
-                            {subject}
-                        </button>
-                    ))}
-                </div>
-
-                <div style={{display: 'flex', flexDirection: 'column', gap: '1rem'}}>
-                    {resourcesForSubject.map((category: ResourceCategory) => (
-                        <AccordionItem
-                            key={category.name}
-                            title={category.name}
-                            isOpen={openCategory === category.name}
-                            onClick={() => toggleCategory(category.name)}
-                        >
-                            <div style={{display: 'flex', flexDirection: 'column', gap: '1rem'}}>
-                                {category.resources.map((resource: Resource) => (
-                                    <div key={resource.title} style={{padding: '1rem', backgroundColor: 'rgba(44, 31, 74, 0.4)', borderRadius: '0.5rem'}}>
-                                        <h4 style={{fontSize: '1.125rem', fontWeight: 700, color: 'var(--spell-blue)'}}>{resource.title}</h4>
-                                        <p style={{color: 'rgba(229, 222, 247, 0.9)', marginTop: '0.25rem', marginBottom: '0.75rem', fontSize: '0.875rem'}}>{resource.description}</p>
-                                        <a
-                                            href={resource.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="btn btn-primary"
-                                            style={{padding: '0.25rem 0.75rem', fontSize: '0.875rem'}}
-                                        >
-                                            View Resource
+                {/* Main Content */}
+                <main>
+                    <Card className="resources-content">
+                        {/* Learning Resources Section */}
+                        <section>
+                            <h3 className="resources-section-title">Learning Resources</h3>
+                            {learningResourcesContent.length > 0 ? (
+                                <div className="resource-list">
+                                    {learningResourcesContent.map(resource => (
+                                        <a key={resource.title} href={resource.url} target="_blank" rel="noopener noreferrer" className="resource-item">
+                                            <div className="icon">
+                                                <ResourceTypeIcon type={resource.type} />
+                                            </div>
+                                            <div className="resource-info">
+                                                <span className="resource-title">{resource.title}</span>
+                                                <p>{resource.description}</p>
+                                            </div>
                                         </a>
-                                    </div>
-                                ))}
-                            </div>
-                        </AccordionItem>
-                    ))}
-                </div>
-            </Card>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="empty-state-container" style={{ border: 'none', padding: '1rem 0' }}>
+                                    <LibraryIcon className="empty-state-icon" />
+                                    <h3 className="empty-state-title">Archives Are Empty</h3>
+                                    <p>Our scribes are currently transcribing resources for this subject.</p>
+                                </div>
+                            )}
+                        </section>
+
+                        {/* Sample Papers Section */}
+                        <section>
+                            <h3 className="resources-section-title">Sample Papers from {user.college}</h3>
+                             {papersForSubject.length > 0 ? (
+                                <div className="resource-list">
+                                    {papersForSubject.map(paper => (
+                                        <a key={paper.id} href={paper.url} target="_blank" rel="noopener noreferrer" className="resource-item">
+                                            <div className="icon">
+                                                <ArticleIcon />
+                                            </div>
+                                            <div className="resource-info">
+                                                <span className="resource-title">{paper.title} - {paper.year}</span>
+                                                <p>Click to view the paper. Opens in a new tab.</p>
+                                            </div>
+                                        </a>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="p-4 text-center text-purple-300/80">
+                                    <p>No sample papers found for this subject at your college in our archives.</p>
+                                </div>
+                            )}
+                        </section>
+                    </Card>
+                </main>
+            </div>
         </div>
     );
 };

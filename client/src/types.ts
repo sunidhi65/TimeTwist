@@ -1,36 +1,47 @@
-
-import type { AIFeedback } from "./services/geminiService.ts";
-export type { AIFeedback };
+import { AIFeedback } from "./../services/geminiService";
 
 export enum View {
   HOME,
   LOGIN,
   REGISTER,
-  STREAM_SELECTION,
   DASHBOARD,
   TIME_WARP,
-  PEER_REVIEW,
   TIME_TRIALS,
   LEADERBOARD,
   PROFILE,
-  MAGIC_ANALYSIS,
   COMMUNITY,
   RESOURCES,
-  DUEL_ARENA
+  DUEL_OF_WITS,
+  PEER_REVIEW_ARENA,
+  MAGIC_ANALYSIS,
 }
 
-export type Stream = 'Non-Medical' | 'Medical' | 'Commerce' | 'Arts';
+export type Branch = 'CSE' | 'ECE' | 'Mechanical' | 'Civil';
 
-export type Subject = 'Math' | 'Physics' | 'Chemistry' | 'CS' | 'Biology' | 'Economics' | 'Business Studies' | 'Accountancy' | 'History' | 'Geography' | 'Political Science';
+export type Subject = 
+    | 'Engineering Mathematics' 
+    | 'Engineering Physics' 
+    | 'Engineering Chemistry' 
+    | 'Programming for Problem Solving' 
+    | 'Data Structures & Algorithms' 
+    | 'Operating Systems' 
+    | 'DBMS' 
+    | 'Digital Logic Design' 
+    | 'Thermodynamics' 
+    | 'Fluid Mechanics' 
+    | 'Strength of Materials' 
+    | 'Structural Analysis' 
+    | 'Surveying';
 
 export interface User {
   id: string; // Unique ID for each user
   username: string;
+  college: string;
   avatar: string;
   wizardPoints: number;
   level: number;
   completedChallengeIds: string[];
-  stream: Stream | null;
+  branch: Branch | null;
 }
 
 export interface Challenge {
@@ -45,17 +56,6 @@ export interface Topic {
     name: string;
     description: string;
     challenges: Challenge[];
-}
-
-export interface PeerSolution {
-  id: string;
-  author: string;
-  authorAvatar: string;
-  challengeId: string;
-  challengeAnswer: string;
-  explanation: string;
-  rating: number;
-  comments: number;
 }
 
 export interface ChatMessage {
@@ -80,37 +80,29 @@ export interface ResourceCategory {
     resources: Resource[];
 }
 
+export interface SamplePaper {
+    id: string;
+    title: string;
+    year: number;
+    url: string;
+}
+
+export interface PeerSolution {
+  id: string;
+  author: string;
+  authorAvatar: string;
+  challengeId: string;
+  challengeAnswer: string;
+  explanation: string;
+  rating: number;
+  comments: number;
+}
+
 // Props for views that can award points and submit solutions
 export interface TimeWarpModeProps {
     user: User;
     onNavigate: (view: View) => void;
     onFeedbackReceived: (points: number, feedback: AIFeedback, challengeId: string) => void;
-    onSolutionSubmit: (solution: Omit<PeerSolution, 'id' | 'rating' | 'comments'>) => void;
-}
-
-export interface TimeTrialsModeProps {
-    user: User;
-    onNavigate: (view: View) => void;
-}
-
-export interface StreamSelectionPageProps {
-    onSelectStream: (stream: Stream) => void;
-}
-
-// Props for the new Duel Arena mode
-export interface DuelArenaModeProps {
-    user: User;
-    allUsers: User[];
-    onNavigate: (view: View) => void;
-    onDuelWon: (points: number) => void;
-}
-
-
-// Props for peer review to display solutions
-export interface PeerReviewArenaProps {
-    user: User;
-    onNavigate: (view: View) => void;
-    solutions: PeerSolution[];
 }
 
 export interface DashboardProps {
@@ -118,9 +110,6 @@ export interface DashboardProps {
     allUsers: User[];
     onNavigate: (view: View) => void;
     onLogout: () => void;
-    hasFeedbackHistory: boolean;
-    theme: 'dark' | 'light';
-    onToggleTheme: () => void;
 }
 
 export interface LeaderboardPageProps {
@@ -132,13 +121,7 @@ export interface LeaderboardPageProps {
 export interface ProfilePageProps {
     user: User;
     onNavigate: (view: View) => void;
-    onUpdateUser: (newUsername: string, newAvatar: string) => void;
-}
-
-export interface MagicAnalysisPageProps {
-    user: User;
-    onNavigate: (view: View) => void;
-    feedbackHistory: AIFeedback[];
+    onChangeBranch: () => void;
 }
 
 export interface CommunityPageProps {
@@ -152,4 +135,25 @@ export interface CommunityPageProps {
 export interface ResourcesPageProps {
     user: User;
     onNavigate: (view: View) => void;
+}
+
+export interface BranchSelectionPageProps {
+    onSelectBranch: (branch: Branch) => void;
+}
+
+export interface DuelOfWitsPageProps {
+    user: User;
+    allUsers: User[];
+    onNavigate: (view: View) => void;
+    onDuelEnd: (points: number) => void;
+}
+
+export interface PeerReviewArenaProps {
+    onNavigate: (view: View) => void;
+    solutions: PeerSolution[];
+}
+
+export interface MagicAnalysisPageProps {
+    onNavigate: (view: View) => void;
+    feedbackHistory: AIFeedback[];
 }

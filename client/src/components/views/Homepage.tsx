@@ -21,10 +21,10 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
           You are given the answer—your quest is to unravel the logic, discover the original question, and prove your mastery of the arcane arts.
         </p>
         <div className="home-actions animate-fade-in" style={{ animationDelay: '0.6s' }}>
-          <Button onClick={() => onNavigate(View.LOGIN)} variant="primary" style={{fontSize: '1.125rem'}}>
+          <Button onClick={() => onNavigate(View.LOGIN)} variant="primary" className="text-lg">
             Enter the Realm (Login)
           </Button>
-          <Button onClick={() => onNavigate(View.REGISTER)} variant="secondary" style={{fontSize: '1.125rem'}}>
+          <Button onClick={() => onNavigate(View.REGISTER)} variant="secondary" className="text-lg">
             Forge a New Legend (Register)
           </Button>
         </div>

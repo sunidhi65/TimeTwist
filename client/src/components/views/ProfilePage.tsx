@@ -1,75 +1,67 @@
-
-import React, { useState } from 'react';
+import React from 'react';
 import { ProfilePageProps, View } from '../../types';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
-import RerollIcon from '../icons/RerollIcon';
 
-const ProfilePage: React.FC<ProfilePageProps> = ({ user, onNavigate, onUpdateUser }) => {
-    const [newUsername, setNewUsername] = useState(user.username);
-    const [avatarSeed, setAvatarSeed] = useState(user.avatar.split('seed=')[1] || user.username);
-    
-    const newAvatarUrl = `https://api.dicebear.com/8.x/pixel-art/svg?seed=${avatarSeed}`;
-
-    const handleRerollAvatar = () => {
-        setAvatarSeed(Math.random().toString(36).substring(7));
-    };
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        const finalUsername = newUsername.trim();
-        if (finalUsername) {
-            onUpdateUser(finalUsername, newAvatarUrl);
-        }
-    };
-    
-    const hasChanges = newUsername.trim() !== user.username || newAvatarUrl !== user.avatar;
+const ProfilePage: React.FC<ProfilePageProps> = ({ user, onNavigate, onChangeBranch }) => {
+    const wizardLevelProgress = (user.wizardPoints % 1000) / 10;
 
     return (
         <div>
             <Button onClick={() => onNavigate(View.DASHBOARD)} className="mb-8">
                 &larr; Back to Dashboard
             </Button>
-            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
-                <div className="text-center mb-10">
-                    <h1 className="font-pixel" style={{fontSize: '3rem', color: 'var(--rune-gold)'}}>Wizard's Sanctum</h1>
-                    <p style={{color: 'rgba(216, 180, 254, 0.8)', marginTop: '0.5rem'}}>Reforge your legend.</p>
-                </div>
+            <div className="text-center mb-10">
+                <h1 className="text-5xl font-bold font-pixel text-rune-gold">Your Profile</h1>
+                <p className="text-purple-300/80 mt-2">Your academic legend, etched in the records.</p>
+            </div>
 
-                <Card style={{width: '100%', maxWidth: '32rem', padding: '2rem'}}>
-                    <form onSubmit={handleSubmit}>
-                        <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '2rem'}}>
-                            <img src={newAvatarUrl} alt="New Avatar Preview" style={{width: '8rem', height: '8rem', borderRadius: '9999px', border: '4px solid var(--rune-gold)', marginBottom: '1rem'}}/>
-                            <Button type="button" onClick={handleRerollAvatar} variant="secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                               <div style={{ width: '1.25rem', height: '1.25rem' }}>
-                                 <RerollIcon />
-                               </div>
-                               Reroll Avatar
-                            </Button>
-
+            <div className="profile-grid">
+                {/* Main Profile Card */}
+                <Card className="profile-main-card">
+                    <div className="profile-avatar-wrapper">
+                        <img src={user.avatar} alt="User Avatar" className="profile-avatar" />
+                    </div>
+                    <div className="profile-details">
+                        <div className="profile-username-wrapper">
+                            <h2 className="font-fantasy">{user.username}</h2>
                         </div>
+                        <p className="level-text">Level {user.level} Engineer</p>
+                        <p className="stream-text">{user.college}</p>
+                        <p className="stream-text">{user.branch} Branch</p>
+                    </div>
+                </Card>
 
-                        <div style={{marginBottom: '1.5rem'}}>
-                            <label htmlFor="username" className="form-label" style={{fontSize: '1.125rem'}}>
-                                Change your Wizard's Name
-                            </label>
-                            <input
-                                id="username"
-                                type="text"
-                                value={newUsername}
-                                onChange={(e) => setNewUsername(e.target.value)}
-                                placeholder="A name for the ages..."
-                                className="form-input"
-                                style={{fontSize: '1.125rem'}}
-                            />
+                {/* Stats & Actions Card */}
+                <Card className="profile-stats-card">
+                    <h3>Academic Stats</h3>
+                    <div className="profile-stat-item">
+                        <span className="label">Points (WP)</span>
+                        <span className="value">{user.wizardPoints}</span>
+                    </div>
+                    <div className="profile-stat-item">
+                        <span className="label">Problems Solved</span>
+                        <span className="value">{user.completedChallengeIds.length}</span>
+                    </div>
+                    <div className="mt-4">
+                        <p className="label mb-1">Progress to Level {user.level + 1}</p>
+                        <div className="progress-bar-container">
+                            <div
+                                className="progress-bar-fill"
+                                style={{ width: `${wizardLevelProgress}%` }}
+                            ></div>
                         </div>
-                        <Button type="submit" className="w-full" disabled={!newUsername.trim() || !hasChanges}>
-                            Save Changes
+                    </div>
+
+                    <div className="profile-actions">
+                        <Button onClick={onChangeBranch} variant="secondary">
+                            Change Branch
                         </Button>
-                    </form>
+                    </div>
                 </Card>
             </div>
         </div>
     );
 };
+
 export default ProfilePage;

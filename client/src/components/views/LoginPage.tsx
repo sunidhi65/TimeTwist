@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
@@ -57,7 +56,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onNavigate }) => {
                         </button>
                     </p>
                 </Card>
-                <p className="auth-return-link">
+                <p className="auth-return-link font-fantasy">
                     <button onClick={() => onNavigate(View.HOME)}>&larr; Return to Portal</button>
                 </p>
             </div>

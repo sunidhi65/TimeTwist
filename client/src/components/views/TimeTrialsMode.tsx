@@ -1,10 +1,10 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, User, Challenge, Subject } from '../../types';
-import { challengesBySubject, SUBJECTS_BY_STREAM } from '../../data/challenges';
+import { challengesBySubject, BRANCH_SUBJECTS } from '../../data/challenges';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
 import SpellBookIcon from '../icons/SpellBookIcon';
+import HourglassIcon from '../icons/HourglassIcon';
 
 interface TimeTrialsModeProps {
     user: User;
@@ -22,10 +22,10 @@ const TimeTrialsMode: React.FC<TimeTrialsModeProps> = ({ user, onNavigate }) => 
     const [currentChallenge, setCurrentChallenge] = useState<Challenge | null>(null);
     const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
 
-    const availableSubjects = user.stream ? SUBJECTS_BY_STREAM[user.stream] : [];
 
     useEffect(() => {
-        let interval: ReturnType<typeof setTimeout> | null = null;
+        // Fix: Use ReturnType<typeof setInterval> for portable timer ID type
+        let interval: ReturnType<typeof setInterval> | null = null;
         if (isActive && timeLeft > 0) {
             interval = setInterval(() => {
                 setTimeLeft(t => t - 1);
@@ -42,9 +42,8 @@ const TimeTrialsMode: React.FC<TimeTrialsModeProps> = ({ user, onNavigate }) => 
     
     const handleStart = useCallback((subject: Subject) => {
         const subjectChallenges = challengesBySubject[subject];
-        if (!subjectChallenges || subjectChallenges.length === 0) {
-            console.error(`No challenges found for subject: ${subject}`);
-            // Optionally, show an error to the user
+        if (subjectChallenges.length === 0) {
+            alert(`No challenges available for ${subject} yet.`);
             return;
         }
         const randomChallenge = subjectChallenges[Math.floor(Math.random() * subjectChallenges.length)];
@@ -74,24 +73,25 @@ const TimeTrialsMode: React.FC<TimeTrialsModeProps> = ({ user, onNavigate }) => 
 
     const minutes = Math.floor(timeLeft / 60);
     const seconds = timeLeft % 60;
-    const timerColor = timeLeft < 30 ? 'var(--glow-pink)' : 'var(--rune-gold)';
+    const timerColor = timeLeft < 30 ? 'text-glow-pink' : timeLeft < 60 ? 'text-rune-gold' : 'text-spell-blue';
 
     // Subject Selection View
     if (!selectedSubject) {
+        const availableSubjects = BRANCH_SUBJECTS[user.branch!];
         return (
             <div>
                 <Button onClick={() => onNavigate(View.DASHBOARD)} className="mb-8">
                     &larr; Back to Dashboard
                 </Button>
                 <div className="text-center mb-10">
-                    <h1 className="font-pixel" style={{fontSize: '2.25rem', color: 'var(--rune-gold)'}}>Select a Trial</h1>
-                    <p style={{color: 'rgba(216, 180, 254, 0.8)', marginTop: '0.5rem'}}>Choose a subject from your stream to test your speed and wit.</p>
+                    <h1 className="text-4xl font-bold font-pixel text-rune-gold">Select a Trial</h1>
+                    <p className="text-purple-300/80 mt-2">Choose a subject from your {user.branch} branch to test your speed and wit.</p>
                 </div>
                 <div className="selection-grid">
-                    {availableSubjects.map((subject: Subject) => (
-                         <Card key={subject} className="card-clickable" style={{padding: '2rem', textAlign: 'center'}} onClick={() => handleStart(subject)}>
-                            <SpellBookIcon style={{width: '4rem', height: '4rem', margin: '0 auto 1rem', color: 'var(--spell-blue)'}}/>
-                            <h3 className="font-pixel" style={{fontSize: '1.5rem', color: 'var(--rune-gold)', marginBottom: '0.5rem'}}>{subject} Trial</h3>
+                    {availableSubjects.map(subject => (
+                         <Card key={subject} className="mode-card card-clickable card-hover-glow-purple" onClick={() => handleStart(subject)}>
+                            <div className="icon text-spell-blue"><SpellBookIcon/></div>
+                            <h3 className="font-pixel">{subject} Trial</h3>
                         </Card>
                     ))}
                 </div>
@@ -106,12 +106,13 @@ const TimeTrialsMode: React.FC<TimeTrialsModeProps> = ({ user, onNavigate }) => 
                  <Button onClick={() => onNavigate(View.DASHBOARD)} className="mb-8">
                     &larr; Back to Dashboard
                 </Button>
-                <Card style={{padding: '2rem', textAlign: 'center', boxShadow: 'var(--glow-gold-shadow)'}}>
-                     <h2 style={{fontSize: '1.875rem', fontWeight: 700, color: 'var(--rune-gold)', marginBottom: '1rem'}}>{isTimeUp ? "Time's Up!" : "Trial Complete!"}</h2>
-                     <p style={{fontSize: '1.25rem', color: 'white', marginBottom: '0.5rem'}}>You scored:</p>
-                     <p className="font-pixel" style={{fontSize: '3.75rem', color: 'var(--spell-blue)'}}>{score ?? 0}</p>
-                     <p style={{color: 'white', marginTop: '1rem'}}>Well done, apprentice. Quick thinking is a sign of a true master.</p>
-                     <div style={{display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '1.5rem'}}>
+                <Card className="trial-results-card">
+                     <div className="result-icon text-spell-blue"><HourglassIcon/></div>
+                     <h2 className="result-title font-fantasy">{isTimeUp ? "Time's Up!" : "Trial Complete!"}</h2>
+                     <p className="result-score-label">You scored:</p>
+                     <p className="result-score">{score ?? 0}</p>
+                     <p className="result-message">Well done, engineer. Quick thinking is a sign of a true master.</p>
+                     <div className="result-actions">
                         <Button onClick={() => handleStart(selectedSubject)} variant="primary">Try Again</Button>
                         <Button onClick={resetTrial} variant="secondary">Change Subject</Button>
                      </div>
@@ -123,36 +124,38 @@ const TimeTrialsMode: React.FC<TimeTrialsModeProps> = ({ user, onNavigate }) => 
     // Active Trial View
     return (
         <div>
-            <Button onClick={() => onNavigate(View.DASHBOARD)} className="mb-8">
-                &larr; Back to Dashboard
-            </Button>
+            <div className="trial-header">
+                <Button onClick={() => onNavigate(View.DASHBOARD)} variant="secondary">&larr; Quit Trial</Button>
+                <div className={`trial-timer ${timerColor} ${timeLeft < 30 ? 'low-time' : ''}`}>
+                    {minutes}:{seconds < 10 ? `0${seconds}` : seconds}
+                </div>
+            </div>
             
-            {isActive && currentChallenge && (
+            <div className="trial-active-grid">
                 <div>
-                    <Card className="challenge-card" style={{boxShadow: 'var(--glow-pink-shadow)'}}>
-                        <p className="font-pixel" style={{fontSize: '3.75rem', color: timerColor, transition: 'color 0.5s'}}>
-                            {minutes}:{seconds.toString().padStart(2, '0')}
-                        </p>
-                        <p style={{fontSize: '1.125rem', color: 'var(--spell-blue)', marginTop: '1rem'}}>Paradox: <span style={{fontWeight: '700', color: 'white'}}>{currentChallenge.answer}</span></p>
-                    </Card>
-
-                    <Card className="explanation-card">
-                        <h2>Quickly, Weave Your Logic!</h2>
-                        <textarea
-                            value={explanation}
-                            onChange={(e) => setExplanation(e.target.value)}
-                            placeholder="The clock is ticking..."
-                            className="explanation-textarea font-sans"
-                            style={{height: '12rem'}}
-                        />
-                        <div className="actions">
-                            <Button onClick={() => handleSubmit(false)} disabled={!explanation.trim()}>
-                                Submit Before Time Runs Out
-                            </Button>
-                        </div>
+                    <Card className="challenge-card mb-0">
+                        <p className="topic-name">A Problem in {selectedSubject}</p>
+                        <h1 className="answer font-pixel">{currentChallenge?.answer}</h1>
+                        <p className="description">{currentChallenge?.description}</p>
                     </Card>
                 </div>
-            )}
+
+                <Card className="explanation-card">
+                    <h2>Construct Your Explanation</h2>
+                    <textarea
+                        value={explanation}
+                        onChange={(e) => setExplanation(e.target.value)}
+                        placeholder="The clock is ticking..."
+                        className="explanation-textarea font-sans"
+                        disabled={!isActive}
+                    />
+                    <div className="actions">
+                        <Button onClick={() => handleSubmit(false)} disabled={!isActive || !explanation.trim()}>
+                            Submit Before Time Runs Out
+                        </Button>
+                    </div>
+                </Card>
+            </div>
         </div>
     );
 };

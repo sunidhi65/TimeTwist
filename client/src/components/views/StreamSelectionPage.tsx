@@ -1,62 +1,58 @@
 import React from 'react';
-import { Stream, StreamSelectionPageProps } from '../../types';
+import { Branch, BranchSelectionPageProps } from '../../types';
 import Card from '../ui/Card';
-import AtomIcon from '../icons/AtomIcon';
-import DnaIcon from '../icons/DnaIcon';
-import BriefcaseIcon from '../icons/BriefcaseIcon';
-import LandmarkIcon from '../icons/LandmarkIcon';
+import SpellBookIcon from '../icons/SpellBookIcon'; // Reused for CSE (coding)
+import RerollIcon from '../icons/RerollIcon'; // Reused for Mechanical (gears)
+import LibraryIcon from '../icons/LibraryIcon'; // Reused for Civil (structures)
+import CrystalBallIcon from '../icons/CrystalBallIcon'; // Reused for ECE (signals/waves)
 
-const streamOptions: { stream: Stream; title: string; description: string; icon: React.ReactNode }[] = [
+const branchOptions: { branch: Branch; icon: React.ReactNode; description: string }[] = [
     {
-        stream: 'Non-Medical',
-        title: 'School of Engineering & Physical Sciences',
-        description: 'Master the arcane arts of Physics, Chemistry, Mathematics, and Computer Science.',
-        icon: <AtomIcon className="icon" style={{color: 'var(--spell-blue)'}}/>
+        branch: 'CSE',
+        icon: <SpellBookIcon />,
+        description: 'Master algorithms, data structures, and the art of computation.'
     },
     {
-        stream: 'Medical',
-        title: 'College of Life & Chemical Sciences',
-        description: 'Delve into the secrets of Biology, Chemistry, and the laws of Physics.',
-        icon: <DnaIcon className="icon" style={{color: 'var(--mana-green)'}}/>
+        branch: 'ECE',
+        icon: <CrystalBallIcon />,
+        description: 'Delve into circuits, signals, and communication systems.'
     },
     {
-        stream: 'Commerce',
-        title: 'Guild of Merchants & Mathematicians',
-        description: 'Study the flow of wealth with Accountancy, Economics, and Business.',
-        icon: <BriefcaseIcon className="icon" style={{color: 'var(--rune-gold)'}}/>
+        branch: 'Mechanical',
+        icon: <RerollIcon />,
+        description: 'Command the principles of thermodynamics, fluids, and machine design.'
     },
     {
-        stream: 'Arts',
-        title: 'Academy of Histories & Humanities',
-        description: 'Explore the chronicles of time with History, Geography, and Political Science.',
-        icon: <LandmarkIcon className="icon" style={{color: 'var(--glow-pink)'}}/>
-    }
+        branch: 'Civil',
+        icon: <LibraryIcon />,
+        description: 'Explore the foundations of structural analysis and infrastructure.'
+    },
 ];
 
-const StreamSelectionPage: React.FC<StreamSelectionPageProps> = ({ onSelectStream }) => {
+const BranchSelectionPage: React.FC<BranchSelectionPageProps> = ({ onSelectBranch }) => {
     return (
-        <div style={{minHeight: '80vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'}}>
-            <div className="text-center mb-10">
-                <h1 className="font-pixel" style={{fontSize: '3rem', color: 'var(--rune-gold)'}}>Choose Your Path</h1>
-                <p style={{color: 'rgba(216, 180, 254, 0.8)', marginTop: '0.5rem', maxWidth: '40rem'}}>
-                    Every wizard's journey is unique. Select the stream of knowledge you wish to pursue to tailor your trials and challenges.
-                </p>
-            </div>
-            <div className="stream-selection-grid">
-                {streamOptions.map(option => (
-                    <Card 
-                        key={option.stream}
-                        className="mode-card card-hover-glow-purple"
-                        onClick={() => onSelectStream(option.stream)}
-                    >
-                        {option.icon}
-                        <h3 className="font-pixel">{option.title}</h3>
-                        <p>{option.description}</p>
-                    </Card>
-                ))}
+        <div className="auth-page-container">
+            <div className="auth-content">
+                <h1 className="auth-title font-pixel">TimeTwist</h1>
+                <h2 className="auth-subtitle font-fantasy mb-10">
+                    Choose Your Engineering Branch
+                </h2>
+                <div className="dashboard-modes-grid md:grid-cols-2">
+                    {branchOptions.map(({ branch, icon, description }) => (
+                         <Card 
+                            key={branch}
+                            className="mode-card card-hover-glow-purple"
+                            onClick={() => onSelectBranch(branch)}
+                        >
+                            <div className="icon">{icon}</div>
+                            <h3 className="font-pixel">{branch}</h3>
+                            <p>{description}</p>
+                        </Card>
+                    ))}
+                </div>
             </div>
         </div>
     );
 };
 
-export default StreamSelectionPage;
+export default BranchSelectionPage;

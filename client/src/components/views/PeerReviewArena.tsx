@@ -1,18 +1,9 @@
-
-
 import React from 'react';
-import { PeerReviewArenaProps, View } from '../../types';
-import { SUBJECTS_BY_STREAM, subjectByChallengeId } from '../../data/challenges';
+import { PeerReviewArenaProps, PeerSolution, View } from '../../types';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
 
-const PeerReviewArena: React.FC<PeerReviewArenaProps> = ({ user, onNavigate, solutions }) => {
-    
-    const availableSubjects = user.stream ? SUBJECTS_BY_STREAM[user.stream] : [];
-    const filteredSolutions = solutions.filter(solution => {
-        const subject = subjectByChallengeId[solution.challengeId];
-        return subject && availableSubjects.includes(subject);
-    });
+const PeerReviewArena: React.FC<PeerReviewArenaProps> = ({ onNavigate, solutions }) => {
 
     return (
         <div>
@@ -21,13 +12,13 @@ const PeerReviewArena: React.FC<PeerReviewArenaProps> = ({ user, onNavigate, sol
             </Button>
 
             <div className="text-center mb-10">
-                <h1 className="font-pixel" style={{fontSize: '3rem', color: 'var(--rune-gold)'}}>Peer-Review Arena</h1>
-                <p style={{color: 'rgba(216, 180, 254, 0.8)', marginTop: '0.5rem'}}>Study the grimoires of other powerful wizards within your stream.</p>
+                <h1 className="text-5xl font-bold font-pixel text-rune-gold">Peer-Review Arena</h1>
+                <p className="text-purple-300/80 mt-2">Study the grimoires of other powerful wizards.</p>
             </div>
 
             <div className="solution-list">
-                {filteredSolutions.length > 0 ? (
-                    filteredSolutions.map(solution => (
+                {solutions.length > 0 ? (
+                    solutions.map(solution => (
                         <Card key={solution.id} className="solution-card animate-fade-in">
                             <div className="solution-card-header">
                                 <div className="solution-author">
@@ -49,7 +40,7 @@ const PeerReviewArena: React.FC<PeerReviewArenaProps> = ({ user, onNavigate, sol
                                 <p className="label">Paradox Solved:</p>
                                 <p className="answer">"{solution.challengeAnswer}"</p>
                                 
-                                <p className="label" style={{marginTop: '1rem'}}>Explanation Weaved:</p>
+                                <p className="label">Explanation Weaved:</p>
                                 <p className="explanation font-sans">{solution.explanation}</p>
                             </div>
                             
@@ -59,10 +50,10 @@ const PeerReviewArena: React.FC<PeerReviewArenaProps> = ({ user, onNavigate, sol
                         </Card>
                     ))
                 ) : (
-                    <Card style={{padding: '2rem', textAlign: 'center'}}>
-                        <h2 style={{fontSize: '1.5rem', fontWeight: 700, color: 'var(--rune-gold)'}}>The Arena is Silent</h2>
-                        <p style={{marginTop: '1rem', color: 'rgba(229, 222, 247, 0.9)', lineHeight: 1.75}}>
-                            No solutions for your stream have been submitted for review yet. <br/>
+                    <Card className="p-8 text-center">
+                        <h2 className="text-2xl font-bold text-rune-gold">The Arena is Silent</h2>
+                        <p className="mt-4 text-purple-200/90 leading-relaxed">
+                            No solutions have been submitted for review yet. <br/>
                             Complete a challenge in Time Warp Mode and share your logic to be judged by your peers!
                         </p>
                     </Card>
