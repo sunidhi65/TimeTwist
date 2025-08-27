@@ -4,6 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TimeTwist: The Wizard's Paradox</title>
+    <script type="importmap">
+    {
+      "imports": {
+        "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
+        "@google/genai": "https://aistudiocdn.com/@google/genai@^1.15.0",
+        "react/": "https://aistudiocdn.com/react@^19.1.1/",
+        "react": "https://aistudiocdn.com/react@^19.1.1"
+      }
+    }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -389,12 +399,12 @@
         flex-wrap: wrap;
         gap: 1rem;
         padding-right: 4.5rem; /* Add space for theme toggle */
-        justify-content: space-between;
       }
       .dashboard-user-info {
         display: flex;
         align-items: center;
         gap: 1rem;
+        margin-right: auto;
       }
       .dashboard-user-info img {
         width: 4rem;
@@ -1210,58 +1220,10 @@
       }
       body[data-theme='light'] .leaderboard-user-info .username { color: #37314f; }
       body[data-theme='light'] .leaderboard-list-item.current-user .username { color: #37314f; }
-      body[data-theme='light'] .leaderboard-user-info .level { color: rgba(124, 58, 237, 0.7); }
-      body[data-theme='light'] .leaderboard-list-item.current-user .points { color: var(--rune-gold); }
-      body[data-theme='light'] .channel-btn:hover { background-color: rgba(124, 58, 237, 0.05); }
-      body[data-theme='light'] .channel-btn.active {
-        background-color: rgba(79, 70, 229, 0.1);
-        color: var(--spell-blue);
-      }
-      body[data-theme='light'] .message-item.is-user .message-bubble {
-        background-color: var(--spell-blue);
-        color: white;
-      }
-      body[data-theme='light'] .message-item:not(.is-user) .message-bubble {
-        background-color: #fff;
-        color: #37314f;
-        border: 1px solid rgba(124, 58, 237, 0.2);
-      }
-      body[data-theme='light'] .message-author { color: rgba(89, 73, 138, 0.8); }
-      body[data-theme='light'] .message-form-container { border-top: 1px solid rgba(124, 58, 237, 0.2); }
-      body[data-theme='light'] .levelup-card .ascended-text { color: #37314f; }
-      body[data-theme='light'] .levelup-card .description { color: #4c3d82; }
-      body[data-theme='light'] .sparkle-effect div { background-color: rgba(124, 58, 237, 0.5); }
-      body[data-theme='light'] .resources-nav-btn { color: #6b7280; }
-      body[data-theme='light'] .resources-nav-btn:hover { color: #37314f; }
-      body[data-theme='light'] .resources-nav-btn.active { color: var(--rune-gold); }
-      body[data-theme='light'] .theme-toggle-btn {
-        background-color: rgba(255, 255, 255, 0.8);
-        border-color: var(--rune-gold);
-        color: var(--spell-blue);
-      }
-      body[data-theme='light'] .theme-toggle-btn:hover {
-        background-color: #fff;
-        color: var(--rune-gold);
-      }
-      body[data-theme='light'] .branch-selection-container { background-image: linear-gradient(to bottom right, #e0e7ff, #f3e8ff); }
-      body[data-theme='light'] .duel-result-panel.winner::after {
-        background-color: var(--rune-gold);
-        color: var(--deep-scroll);
-      }
     </style>
-  <script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react@^19.1.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
-    "react/": "https://esm.sh/react@^19.1.0/",
-    "@google/genai": "https://esm.sh/@google/genai@^1.10.0"
-  }
-}
-</script>
-</head>
-  <body data-theme="dark">
+  </head>
+  <body>
     <div id="root"></div>
-    <script type="module" src="./src/index.tsx"></script>
+    <script type="module" src="/index.tsx"></script>
   </body>
 </html>

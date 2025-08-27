@@ -80,13 +80,6 @@ export interface ResourceCategory {
     resources: Resource[];
 }
 
-export interface SamplePaper {
-    id: string;
-    title: string;
-    year: number;
-    url: string;
-}
-
 export interface PeerSolution {
   id: string;
   author: string;
@@ -121,7 +114,7 @@ export interface LeaderboardPageProps {
 export interface ProfilePageProps {
     user: User;
     onNavigate: (view: View) => void;
-    onUpdateUser: (view: View) => void;
+    onUpdateUser: (newUsername: string, newAvatar: string) => void;
     onChangeBranch: () => void;
 }
 
