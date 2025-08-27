@@ -109,7 +109,6 @@
       .text-center { text-align: center; }
       .mb-8 { margin-bottom: 2rem; }
       .mb-10 { margin-bottom: 2.5rem; }
-      .mt-10 { margin-top: 2.5rem; }
       .w-full { width: 100%; }
       .flex { display: flex; }
       .items-center { align-items: center; }
@@ -390,12 +389,12 @@
         flex-wrap: wrap;
         gap: 1rem;
         padding-right: 4.5rem; /* Add space for theme toggle */
+        justify-content: space-between;
       }
       .dashboard-user-info {
         display: flex;
         align-items: center;
         gap: 1rem;
-        margin-right: auto; /* Push logout button to the right */
       }
       .dashboard-user-info img {
         width: 4rem;
@@ -786,12 +785,11 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 1.5rem;
         cursor: pointer;
         transition: transform 0.2s, box-shadow 0.2s;
         box-shadow: var(--glow-pink-shadow);
         color: white;
-        text-align: left;
+        text-align: center;
       }
       .edit-profile-button-large:hover {
         transform: scale(1.03);
@@ -900,85 +898,46 @@
       .message-input { flex: 1 1 0%; }
 
       /* Resources Page */
-      .resources-layout {
+      .resources-nav {
+        margin-bottom: 2rem;
+        border-bottom: 1px solid rgba(192, 132, 252, 0.3);
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .resources-nav-btn {
+        padding: 0.75rem 1.5rem;
+        font-size: 1.125rem;
+        font-weight: 700;
+        transition: all 0.2s;
+        border: none;
+        background: none;
+        cursor: pointer;
+        color: #9ca3af;
+        border-bottom: 2px solid transparent;
+      }
+      .resources-nav-btn:hover { color: white; }
+      .resources-nav-btn.active {
+        color: var(--rune-gold);
+        border-bottom-color: var(--rune-gold);
+      }
+      .library-grid {
         display: grid;
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(1, minmax(0, 1fr));
         gap: 2rem;
       }
-      @media(min-width: 1024px) {
-        .resources-layout {
-          grid-template-columns: 280px 1fr;
-        }
-      }
-      .resources-sidebar h2 {
+      @media (min-width: 1024px) { .library-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+      .tome-card { padding: 1.5rem; }
+      .tome-card h3 {
         font-size: 1.5rem;
         font-weight: 700;
         color: var(--rune-gold);
         margin-bottom: 1rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid rgba(255, 202, 58, 0.3);
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid rgba(192, 132, 252, 0.3);
       }
-      .resources-sidebar-list {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-      }
-      .sidebar-btn {
-        width: 100%;
-        text-align: left;
-        padding: 0.75rem 1rem;
-        font-size: 1rem;
-        border-radius: 0.375rem;
-        transition: all 0.2s;
-        background: none;
-        border: 1px solid transparent;
-        color: #d8b4fe;
-        cursor: pointer;
-        font-family: 'Cinzel', serif;
-      }
-      .sidebar-btn:hover {
-        background-color: rgba(192, 132, 252, 0.1);
-        color: white;
-      }
-      .sidebar-btn.active {
-        color: white;
-        background-color: var(--spell-blue);
-        box-shadow: var(--glow-blue-shadow);
-        font-weight: 700;
-      }
-      .resources-content {
-        padding: 2rem;
-      }
-      .resources-section-title {
-        font-size: 1.75rem;
-        font-family: 'Cinzel', serif;
-        font-weight: 700;
-        color: var(--rune-gold);
-        margin-bottom: 1.5rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid rgba(255, 202, 58, 0.3);
-      }
-      .resources-section-title:not(:first-child) {
-        margin-top: 2.5rem;
-      }
-      .resource-list { display: flex; flex-direction: column; }
-      a.resource-item {
-        display: flex;
-        align-items: center;
-        gap: 1.5rem;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        transition: background-color 0.2s ease;
-        text-decoration: none;
-        color: inherit;
-        border-bottom: 1px solid rgba(192, 132, 252, 0.1);
-      }
-      a.resource-item:last-child {
-        border-bottom: none;
-      }
-      a.resource-item:hover {
-        background-color: rgba(76, 201, 240, 0.1);
-      }
+      .resource-list { display: flex; flex-direction: column; gap: 1.5rem; }
+      .resource-item { display: flex; align-items: flex-start; gap: 1rem; }
       .resource-item .icon {
         flex-shrink: 0;
         width: 2.5rem;
@@ -991,43 +950,21 @@
         align-items: center;
         justify-content: center;
       }
-      .resource-item .resource-title {
+      .resource-item .resource-info a {
         font-size: 1.125rem;
         font-weight: 700;
-        color: #e5e7eb;
-        transition: color 0.2s;
-        margin-bottom: 0.25rem;
-      }
-      a.resource-item:hover .resource-title {
         color: var(--spell-blue);
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+      .resource-item .resource-info a:hover {
+        color: var(--rune-gold);
+        text-decoration: underline;
       }
       .resource-item .resource-info p {
         font-size: 0.875rem;
         color: rgba(216, 180, 254, 0.8);
-        margin-top: 0;
-      }
-      .empty-state-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 2rem 1rem;
-        color: rgba(216, 180, 254, 0.7);
-        border: 2px dashed rgba(192, 132, 252, 0.2);
-        border-radius: 0.5rem;
-      }
-      .empty-state-icon {
-        width: 4rem;
-        height: 4rem;
-        margin-bottom: 1.5rem;
-        opacity: 0.5;
-      }
-      .empty-state-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #e5e7eb;
-        margin-bottom: 0.5rem;
+        margin-top: 0.25rem;
       }
 
       /* Duel of Wits Page */
@@ -1294,6 +1231,9 @@
       body[data-theme='light'] .levelup-card .ascended-text { color: #37314f; }
       body[data-theme='light'] .levelup-card .description { color: #4c3d82; }
       body[data-theme='light'] .sparkle-effect div { background-color: rgba(124, 58, 237, 0.5); }
+      body[data-theme='light'] .resources-nav-btn { color: #6b7280; }
+      body[data-theme='light'] .resources-nav-btn:hover { color: #37314f; }
+      body[data-theme='light'] .resources-nav-btn.active { color: var(--rune-gold); }
       body[data-theme='light'] .theme-toggle-btn {
         background-color: rgba(255, 255, 255, 0.8);
         border-color: var(--rune-gold);
@@ -1308,44 +1248,6 @@
         background-color: var(--rune-gold);
         color: var(--deep-scroll);
       }
-      body[data-theme='light'] .sidebar-btn {
-        color: #4c3d82;
-      }
-      body[data-theme='light'] .sidebar-btn:hover {
-        background-color: rgba(124, 58, 237, 0.05);
-        color: #37314f;
-      }
-      body[data-theme='light'] .sidebar-btn.active {
-        background-color: var(--spell-blue);
-        color: white;
-      }
-      body[data-theme='light'] .resources-content {
-        background: rgba(255, 255, 255, 0.6);
-        border-color: rgba(124, 58, 237, 0.2);
-      }
-      body[data-theme='light'] .resources-section-title {
-        border-bottom-color: rgba(124, 58, 237, 0.2);
-      }
-      body[data-theme='light'] a.resource-item {
-        border-bottom-color: rgba(124, 58, 237, 0.1);
-      }
-      body[data-theme='light'] a.resource-item:hover {
-        background-color: rgba(79, 70, 229, 0.05);
-      }
-      body[data-theme='light'] .resource-item .resource-title {
-        color: #37314f;
-      }
-      body[data-theme='light'] a.resource-item:hover .resource-title {
-        color: var(--spell-blue);
-      }
-      body[data-theme='light'] .empty-state-container {
-        color: #6b7280;
-        border-color: rgba(124, 58, 237, 0.2);
-      }
-      body[data-theme='light'] .empty-state-title {
-        color: #37314f;
-      }
-
     </style>
   <script type="importmap">
 {
@@ -1360,6 +1262,6 @@
 </head>
   <body data-theme="dark">
     <div id="root"></div>
-    <script type="module" src="./src/index.tsx"></script>1
+    <script type="module" src="./src/index.tsx"></script>
   </body>
 </html>
