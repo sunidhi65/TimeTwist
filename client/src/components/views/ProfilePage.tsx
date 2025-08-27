@@ -12,6 +12,13 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onNavigate, onUpdateUse
     const newAvatarUrl = `https://api.dicebear.com/8.x/pixel-art/svg?seed=${avatarSeed}`;
     const wizardLevelProgress = (user.wizardPoints % 1000) / 10;
 
+    const currentSeed = user.avatar.split('seed=')[1] || user.username;
+
+    // ✅ Detect if username OR avatar actually changed
+    const hasChanges =
+        isEditing &&
+        (newUsername.trim() !== user.username || avatarSeed !== currentSeed);
+
     const handleRerollAvatar = () => {
         setAvatarSeed(Math.random().toString(36).substring(7));
     };
@@ -29,19 +36,18 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onNavigate, onUpdateUse
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         const finalUsername = newUsername.trim();
-        if (finalUsername) {
+        if (finalUsername && hasChanges) {
             onUpdateUser(finalUsername, newAvatarUrl);
             setIsEditing(false);
         }
     };
-
-    const hasChanges = isEditing && (newUsername.trim() !== user.username || newAvatarUrl !== user.avatar);
 
     return (
         <div>
             <Button onClick={() => onNavigate(View.DASHBOARD)} className="mb-8">
                 &larr; Back to Dashboard
             </Button>
+
             <div className="text-center mb-10">
                 <h1 className="text-5xl font-bold font-pixel text-rune-gold">Your Profile</h1>
                 <p className="text-purple-300/80 mt-2">Your academic legend, etched in the records.</p>
@@ -52,13 +58,23 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onNavigate, onUpdateUse
                 <Card className="profile-main-card">
                     <form onSubmit={handleSubmit}>
                         <div className="profile-avatar-wrapper">
-                            <img src={isEditing ? newAvatarUrl : user.avatar} alt="User Avatar" className="profile-avatar" />
+                            <img
+                                src={isEditing ? newAvatarUrl : user.avatar}
+                                alt="User Avatar"
+                                className="profile-avatar"
+                            />
                             {isEditing && (
-                                <Button type="button" onClick={handleRerollAvatar} variant="secondary" className="reroll-btn btn-icon">
+                                <Button
+                                    type="button"
+                                    onClick={handleRerollAvatar}
+                                    variant="secondary"
+                                    className="reroll-btn btn-icon"
+                                >
                                     <RerollIcon />
                                 </Button>
                             )}
                         </div>
+
                         <div className="profile-details">
                             <div className="profile-username-wrapper">
                                 {isEditing ? (
@@ -80,7 +96,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onNavigate, onUpdateUse
 
                         {isEditing && (
                             <div className="profile-edit-actions">
-                                <Button type="button" onClick={handleCancel} variant="secondary">Cancel</Button>
+                                <Button type="button" onClick={handleCancel} variant="secondary">
+                                    Cancel
+                                </Button>
                                 <Button type="submit" disabled={!newUsername.trim() || !hasChanges}>
                                     Save Changes
                                 </Button>
@@ -114,7 +132,11 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onNavigate, onUpdateUse
                         {!isEditing ? (
                             <>
                                 <button onClick={handleEdit} className="edit-profile-button-large">
-                                    <span className="edit-profile-button-text">Edit<br/>Profile</span>
+                                    <span className="edit-profile-button-text">
+                                        Edit
+                                        <br />
+                                        Profile
+                                    </span>
                                 </button>
                                 <Button onClick={onChangeBranch} variant="secondary">
                                     Change Branch
@@ -124,7 +146,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onNavigate, onUpdateUse
                             <div className="text-center mt-8 p-4 bg-deep-scroll/50 rounded-lg">
                                 <p className="font-bold text-white">Editing Mode</p>
                                 <p className="text-sm text-purple-300/80 mt-1">
-                                    Update your avatar and name in the main panel. Don't forget to save your changes!
+                                    Update your avatar and name in the main panel. Don&apos;t forget
+                                    to save your changes!
                                 </p>
                             </div>
                         )}

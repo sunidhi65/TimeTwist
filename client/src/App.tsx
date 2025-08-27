@@ -16,8 +16,6 @@ import SparkleBackground from './components/ui/SparkleBackground';
 import BranchSelectionPage from './components/views/StreamSelectionPage';
 import DuelOfWitsPage from './components/views/DuelOfWitsPage';
 import ThemeToggleButton from './components/ui/ThemeToggleButton';
-import MagicAnalysisPage from './components/views/MagicAnalysisPage';
-import PeerReviewArena from './components/views/PeerReviewArena';
 import { MOCK_USERS } from './data/mockUsers';
 import { MOCK_MESSAGES } from './data/mockMessages';
 import { MOCK_SOLUTIONS } from './data/mockSolutions';
@@ -193,12 +191,7 @@ const App: React.FC = () => {
             case View.RESOURCES:
                 return <ResourcesPage user={user} onNavigate={handleNavigate} />;
             case View.DUEL_OF_WITS:
-                return <DuelOfWitsPage user={user} allUsers={allUsers} onNavigate={handleNavigate} onDuelEnd={handleDuelEnd} />;
-            case View.PEER_REVIEW_ARENA:
-                return <PeerReviewArena onNavigate={handleNavigate} solutions={solutions} />;
-            case View.MAGIC_ANALYSIS:
-                return <MagicAnalysisPage onNavigate={handleNavigate} feedbackHistory={feedbackHistory} />;
-            default:
+                return <DuelOfWitsPage user={user} allUsers={allUsers} onNavigate={handleNavigate} onDuelEnd={handleDuelEnd} />;            default:
                 setCurrentView(View.DASHBOARD); // Fallback to dashboard
                 return <Dashboard user={user} allUsers={sortedUsers} onNavigate={handleNavigate} onLogout={handleLogout} />;
         }
