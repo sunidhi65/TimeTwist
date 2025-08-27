@@ -103,6 +103,8 @@ export interface DashboardProps {
     allUsers: User[];
     onNavigate: (view: View) => void;
     onLogout: () => void;
+    theme: 'dark' | 'light';
+    onThemeToggle: () => void;
 }
 
 export interface LeaderboardPageProps {

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { View, User, ChatMessage, Branch, PeerSolution } from './types';
+import { View, User, ChatMessage, Branch } from './types';
 import { AIFeedback } from './../services/geminiService';
 import HomePage from './components/views/Homepage';
 import LoginPage from './components/views/LoginPage';
@@ -15,17 +15,14 @@ import ResourcesPage from './components/views/ResourcesPage';
 import SparkleBackground from './components/ui/SparkleBackground';
 import BranchSelectionPage from './components/views/StreamSelectionPage';
 import DuelOfWitsPage from './components/views/DuelOfWitsPage';
-import ThemeToggleButton from './components/ui/ThemeToggleButton';
 import { MOCK_USERS } from './data/mockUsers';
 import { MOCK_MESSAGES } from './data/mockMessages';
-import { MOCK_SOLUTIONS } from './data/mockSolutions';
 
 const App: React.FC = () => {
     const [currentView, setCurrentView] = useState<View>(View.HOME);
     const [user, setUser] = useState<User | null>(null);
     const [allUsers, setAllUsers] = useState<User[]>(MOCK_USERS);
     const [messages, setMessages] = useState<ChatMessage[]>(MOCK_MESSAGES);
-    const [solutions, setSolutions] = useState<PeerSolution[]>(MOCK_SOLUTIONS);
     const [isLevelUpModalOpen, setIsLevelUpModalOpen] = useState(false);
     const [feedbackHistory, setFeedbackHistory] = useState<AIFeedback[]>([]);
     const [theme, setTheme] = useState<'dark' | 'light'>(
@@ -41,87 +38,116 @@ const App: React.FC = () => {
         setTheme(prevTheme => (prevTheme === 'dark' ? 'light' : 'dark'));
     };
 
-    const handleNavigate = useCallback((view: View) => {
-        setCurrentView(view);
-        window.scrollTo(0, 0);
-    }, []);
-
     const handleLogin = useCallback((username: string) => {
         const existingUser = allUsers.find(u => u.username.toLowerCase() === username.toLowerCase());
         if (existingUser) {
             setUser(existingUser);
-            if (existingUser.branch) {
-                handleNavigate(View.DASHBOARD);
-            }
         } else {
-            alert("Wizard not found. Please register your Grimoire first.");
+            // Create a new user if they don't exist, even on the login page
+            setUser({
+                id: `user-${Date.now()}`,
+                username,
+                college: 'TimeTwist University', // Default college
+                avatar: `https://api.dicebear.com/8.x/pixel-art/svg?seed=${username}`,
+                wizardPoints: 50,
+                level: 1,
+                completedChallengeIds: [],
+                branch: null,
+            });
         }
-    }, [allUsers, handleNavigate]);
+        setCurrentView(View.DASHBOARD);
+    }, [allUsers]);
 
     const handleRegister = useCallback((username: string, college: string) => {
-        const existingUser = allUsers.find(u => u.username.toLowerCase() === username.toLowerCase());
-        if (existingUser) {
-            alert("A wizard with this name already exists. Please choose another name or login.");
-            return;
-        }
-
         const newUser: User = {
             id: `user-${Date.now()}`,
             username,
             college,
-            avatar: `https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(username)}`,
+            avatar: `https://api.dicebear.com/8.x/pixel-art/svg?seed=${username}`,
             wizardPoints: 0,
             level: 1,
             completedChallengeIds: [],
             branch: null,
         };
-        setAllUsers(prev => [...prev, newUser]);
         setUser(newUser);
-    }, [allUsers]);
-
-    const handleLogout = useCallback(() => {
-        setUser(null);
-        handleNavigate(View.HOME);
-    }, [handleNavigate]);
-
-    const handleSelectBranch = useCallback((branch: Branch) => {
-        if (user) {
-            setUser(prevUser => prevUser ? { ...prevUser, branch } : null);
-            handleNavigate(View.DASHBOARD);
-        }
-    }, [user, handleNavigate]);
-
-    const handleChangeBranch = useCallback(() => {
-        if (user) {
-            setUser(prevUser => prevUser ? { ...prevUser, branch: null } : null);
-        }
-    }, [user]);
-
-    const handleFeedbackReceived = useCallback((points: number, feedback: AIFeedback, challengeId: string) => {
+        setAllUsers(prev => [...prev, newUser].sort((a,b) => b.wizardPoints - a.wizardPoints));
+        setCurrentView(View.DASHBOARD);
+    }, []);
+    
+    const handleUpdateUser = useCallback((newUsername: string, newAvatar: string) => {
         if (!user) return;
 
-        setFeedbackHistory(prev => [feedback, ...prev].slice(0, 10));
+        const updatedUser: User = {
+            ...user,
+            username: newUsername,
+            avatar: newAvatar,
+        };
+        setUser(updatedUser);
 
-        const newPoints = user.wizardPoints + points;
+        setAllUsers(prevUsers => {
+            const newUsers = prevUsers.map(u => u.id === user.id ? updatedUser : u);
+            return newUsers.sort((a, b) => b.wizardPoints - a.wizardPoints);
+        });
+
+        navigateTo(View.DASHBOARD);
+    }, [user]);
+
+    const handleFeedback = useCallback((points: number, feedback: AIFeedback, challengeId: string) => {
+        if (!user) return;
+
+        const oldPoints = user.wizardPoints;
+        const newPoints = oldPoints + points;
         const oldLevel = user.level;
         const newLevel = Math.floor(newPoints / 1000) + 1;
 
-        setUser(prevUser => {
-            if (!prevUser) return null;
-            return {
-                ...prevUser,
-                wizardPoints: newPoints,
-                level: newLevel,
-                completedChallengeIds: [...new Set([...prevUser.completedChallengeIds, challengeId])]
-            };
-        });
+        const updatedCompletedIds = (feedback.score > 6 && !user.completedChallengeIds.includes(challengeId))
+            ? [...user.completedChallengeIds, challengeId]
+            : user.completedChallengeIds;
 
+        const updatedUser: User = { 
+            ...user, 
+            wizardPoints: newPoints, 
+            level: newLevel,
+            completedChallengeIds: updatedCompletedIds,
+        };
+        
+        setUser(updatedUser);
+        
+        setAllUsers(prev => prev.map(u => u.id === user.id ? updatedUser : u).sort((a, b) => b.wizardPoints - a.wizardPoints));
+        
+        if (newLevel > oldLevel) {
+            setIsLevelUpModalOpen(true);
+        }
+
+        if (feedback.score > 0) {
+            setFeedbackHistory(prev => [feedback, ...prev].slice(0, 10));
+        }
+    }, [user]);
+
+    const handleDuelEnd = useCallback((points: number) => {
+        if (!user) return;
+        
+        const oldPoints = user.wizardPoints;
+        const newPoints = oldPoints + points;
+        const oldLevel = user.level;
+        const newLevel = Math.floor(newPoints / 1000) + 1;
+
+        const updatedUser: User = { 
+            ...user, 
+            wizardPoints: newPoints, 
+            level: newLevel,
+        };
+        
+        setUser(updatedUser);
+        
+        setAllUsers(prev => prev.map(u => u.id === user.id ? updatedUser : u).sort((a, b) => b.wizardPoints - a.wizardPoints));
+        
         if (newLevel > oldLevel) {
             setIsLevelUpModalOpen(true);
         }
     }, [user]);
 
-    const handleSendMessage = useCallback((channel: string, text: string) => {
+     const handleSendMessage = useCallback((channel: string, text: string) => {
         if (!user) return;
         const newMessage: ChatMessage = {
             id: `msg-${Date.now()}`,
@@ -135,85 +161,83 @@ const App: React.FC = () => {
         setMessages(prev => [...prev, newMessage]);
     }, [user]);
 
-    const handleDuelEnd = useCallback((points: number) => {
+    const handleLogout = useCallback(() => {
+        setUser(null);
+        setCurrentView(View.HOME);
+    }, []);
+
+    const navigateTo = useCallback((view: View) => {
+        setCurrentView(view);
+    }, []);
+    
+    const handleSetBranch = useCallback((branch: Branch) => {
         if (!user) return;
-        const newPoints = user.wizardPoints + points;
-        const oldLevel = user.level;
-        const newLevel = Math.floor(newPoints / 1000) + 1;
-        
-        setUser(prevUser => {
-            if (!prevUser) return null;
-            return {
-                ...prevUser,
-                wizardPoints: newPoints,
-                level: newLevel,
-            };
-        });
-        
-        if (newLevel > oldLevel) {
-            setIsLevelUpModalOpen(true);
-        }
+        const updatedUser = { ...user, branch };
+        setUser(updatedUser);
+        setAllUsers(prev => prev.map(u => u.id === user.id ? updatedUser : u));
     }, [user]);
+    
+    const handleChangeBranch = useCallback(() => {
+        if (!user) return;
+        setUser({ ...user, branch: null });
+    }, [user]);
+
+    const renderView = () => {
+        if (!user) {
+             switch (currentView) {
+                case View.LOGIN:
+                    return <LoginPage onLogin={handleLogin} onNavigate={navigateTo} />;
+                case View.REGISTER:
+                    return <RegisterPage onRegister={handleRegister} onNavigate={navigateTo} />;
+                default:
+                    return <HomePage onNavigate={navigateTo} />;
+            }
+        }
+        
+        if (!user.branch) {
+            return <BranchSelectionPage onSelectBranch={handleSetBranch} />;
+        }
+
+        switch (currentView) {
+            case View.DASHBOARD:
+                return <Dashboard user={user} allUsers={allUsers} onNavigate={navigateTo} onLogout={handleLogout} theme={theme} onThemeToggle={handleThemeToggle} />;
+            case View.TIME_WARP:
+                return <TimeWarpMode user={user} onNavigate={navigateTo} onFeedbackReceived={handleFeedback} />;
+            case View.TIME_TRIALS:
+                return <TimeTrialsMode user={user} onNavigate={navigateTo} />;
+            case View.DUEL_OF_WITS:
+                return <DuelOfWitsPage user={user} allUsers={allUsers} onNavigate={navigateTo} onDuelEnd={handleDuelEnd} />;
+            case View.LEADERBOARD:
+                return <LeaderboardPage currentUser={user} allUsers={allUsers} onNavigate={navigateTo} />;
+            case View.PROFILE:
+                return <ProfilePage user={user} onNavigate={navigateTo} onUpdateUser={handleUpdateUser} onChangeBranch={handleChangeBranch} />;
+            case View.COMMUNITY:
+                return <CommunityPage user={user} allUsers={allUsers} messages={messages} onNavigate={navigateTo} onSendMessage={handleSendMessage} />;
+            case View.RESOURCES:
+                return <ResourcesPage user={user} onNavigate={navigateTo} />;
+            default:
+                return <Dashboard user={user} allUsers={allUsers} onNavigate={navigateTo} onLogout={handleLogout} theme={theme} onThemeToggle={handleThemeToggle} />;
+        }
+    };
 
     const sortedUsers = useMemo(() => {
         return [...allUsers].sort((a, b) => b.wizardPoints - a.wizardPoints);
     }, [allUsers]);
 
-    const renderContent = () => {
-        if (!user) {
-            switch (currentView) {
-                case View.LOGIN:
-                    return <LoginPage onLogin={handleLogin} onNavigate={handleNavigate} />;
-                case View.REGISTER:
-                    return <RegisterPage onRegister={handleRegister} onNavigate={handleNavigate} />;
-                default:
-                    return <HomePage onNavigate={handleNavigate} />;
-            }
-        }
-
-        if (!user.branch) {
-            return <BranchSelectionPage onSelectBranch={handleSelectBranch} />;
-        }
-
-        switch (currentView) {
-            case View.DASHBOARD:
-                return <Dashboard user={user} allUsers={sortedUsers} onNavigate={handleNavigate} onLogout={handleLogout} />;
-            case View.TIME_WARP:
-                return <TimeWarpMode user={user} onNavigate={handleNavigate} onFeedbackReceived={handleFeedbackReceived} />;
-            case View.TIME_TRIALS:
-                return <TimeTrialsMode user={user} onNavigate={handleNavigate} />;
-            case View.LEADERBOARD:
-                return <LeaderboardPage currentUser={user} allUsers={sortedUsers} onNavigate={handleNavigate} />;
-            case View.PROFILE:
-                return <ProfilePage user={user} onNavigate={handleNavigate} onChangeBranch={handleChangeBranch} />;
-            case View.COMMUNITY:
-                return <CommunityPage user={user} allUsers={sortedUsers} messages={messages} onNavigate={handleNavigate} onSendMessage={handleSendMessage} />;
-            case View.RESOURCES:
-                return <ResourcesPage user={user} onNavigate={handleNavigate} />;
-            case View.DUEL_OF_WITS:
-                return <DuelOfWitsPage user={user} allUsers={allUsers} onNavigate={handleNavigate} onDuelEnd={handleDuelEnd} />;            default:
-                setCurrentView(View.DASHBOARD); // Fallback to dashboard
-                return <Dashboard user={user} allUsers={sortedUsers} onNavigate={handleNavigate} onLogout={handleLogout} />;
-        }
-    };
-
     return (
-        <div className="app-container">
+        <main>
             <SparkleBackground />
-            <div className="theme-toggle-container">
-                <ThemeToggleButton currentTheme={theme} onToggle={handleThemeToggle} />
+            <div className="container">
+                {renderView()}
+                 {user && (
+                    <LevelUpModal 
+                        isOpen={isLevelUpModalOpen}
+                        onClose={() => setIsLevelUpModalOpen(false)}
+                        level={user.level}
+                    />
+                )}
             </div>
-            <main className="main-content">
-                {renderContent()}
-            </main>
-            {user && (
-                <LevelUpModal
-                    isOpen={isLevelUpModalOpen}
-                    onClose={() => setIsLevelUpModalOpen(false)}
-                    level={user.level}
-                />
-            )}
-        </div>
+        </main>
     );
 };
 

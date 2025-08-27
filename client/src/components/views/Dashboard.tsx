@@ -8,8 +8,9 @@ import EditIcon from '../icons/EditIcon';
 import CommunityIcon from '../icons/CommunityIcon';
 import LibraryIcon from '../icons/LibraryIcon';
 import SwordsIcon from '../icons/SwordIcon';
+import ThemeToggleButton from '../ui/ThemeToggleButton';
 
-const Dashboard: React.FC<DashboardProps> = ({ user, allUsers, onNavigate, onLogout }) => {
+const Dashboard: React.FC<DashboardProps> = ({ user, allUsers, onNavigate, onLogout, theme, onThemeToggle }) => {
     const wizardLevelProgress = (user.wizardPoints % 1000) / 10;
     const topWizards = allUsers.slice(0, 3);
 
@@ -28,13 +29,16 @@ const Dashboard: React.FC<DashboardProps> = ({ user, allUsers, onNavigate, onLog
                         <p className="level-text">Level {user.level} Sorcerer</p>
                     </div>
                 </div>
-                <Button onClick={onLogout} variant="secondary">Logout</Button>
+                <div className="dashboard-header-actions">
+                    <Button onClick={onLogout} variant="secondary">Logout</Button>
+                    <ThemeToggleButton currentTheme={theme} onToggle={onThemeToggle} />
+                </div>
             </header>
 
             <div className="dashboard-grid">
                 {/* Stats Card */}
                 <Card className="dashboard-stats-card">
-                    <h2 className="text-xl font-bold text-rune-gold mb-4">Wizarding Stats</h2>
+                    <h2 className="text-xl">Wizarding Stats</h2>
                     <div>
                         <div className="stat-item">
                            <p>Wizard Points (WP): <span>{user.wizardPoints}</span></p>
@@ -53,7 +57,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, allUsers, onNavigate, onLog
                 
                 {/* Leaderboard Preview Card */}
                 <Card className="dashboard-leaderboard-card">
-                     <h2 className="text-xl font-bold text-rune-gold mb-4">Hall of Fame</h2>
+                     <h2 className="text-xl">Hall of Fame</h2>
                      <div>
                         {topWizards.map((wizard, index) => (
                              <div key={wizard.id} className="leaderboard-item">
@@ -77,7 +81,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, allUsers, onNavigate, onLog
 
 
             <div className="text-center mb-10">
-                <h2 className="text-4xl font-bold font-pixel text-rune-gold">Choose Your Path</h2>
+                <h2 className="text-4xl font-bold">Choose Your Path</h2>
                 <p className="text-purple-300/80 mt-2">The threads of fate await your command.</p>
             </div>
             
