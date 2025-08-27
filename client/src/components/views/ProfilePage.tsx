@@ -7,17 +7,24 @@ import RerollIcon from '../icons/RerollIcon';
 const ProfilePage: React.FC<ProfilePageProps> = ({ user, onNavigate, onUpdateUser, onChangeBranch }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [newUsername, setNewUsername] = useState(user.username);
-    const [avatarSeed, setAvatarSeed] = useState(user.avatar.split('seed=')[1] || user.username);
+    
+    // Extract current avatar seed more reliably
+    const getCurrentAvatarSeed = () => {
+        const urlParts = user.avatar.split('seed=');
+        return urlParts.length > 1 ? urlParts[1].split('&')[0] : user.username;
+    };
+    
+    const [avatarSeed, setAvatarSeed] = useState(getCurrentAvatarSeed());
 
     const newAvatarUrl = `https://api.dicebear.com/8.x/pixel-art/svg?seed=${avatarSeed}`;
     const wizardLevelProgress = (user.wizardPoints % 1000) / 10;
 
-    const currentSeed = user.avatar.split('seed=')[1] || user.username;
+    const currentSeed = getCurrentAvatarSeed();
 
-    // ✅ Detect if username OR avatar actually changed
-    const hasChanges =
-        isEditing &&
-        (newUsername.trim() !== user.username || avatarSeed !== currentSeed);
+    // Fixed hasChanges logic - check if either username or avatar changed
+    const hasChanges = 
+        newUsername.trim() !== user.username || 
+        avatarSeed !== currentSeed;
 
     const handleRerollAvatar = () => {
         setAvatarSeed(Math.random().toString(36).substring(7));
@@ -25,20 +32,28 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onNavigate, onUpdateUse
 
     const handleEdit = () => {
         setIsEditing(true);
+        // Reset values when starting to edit
+        setNewUsername(user.username);
+        setAvatarSeed(getCurrentAvatarSeed());
     };
 
     const handleCancel = () => {
         setNewUsername(user.username);
-        setAvatarSeed(user.avatar.split('seed=')[1] || user.username);
+        setAvatarSeed(getCurrentAvatarSeed());
         setIsEditing(false);
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         const finalUsername = newUsername.trim();
+        
+        // Only proceed if username is valid and there are actual changes
         if (finalUsername && hasChanges) {
             onUpdateUser(finalUsername, newAvatarUrl);
             setIsEditing(false);
+        } else if (!finalUsername) {
+            // Show error or prevent submission for empty username
+            alert('Username cannot be empty');
         }
     };
 
@@ -84,6 +99,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onNavigate, onUpdateUse
                                         value={newUsername}
                                         onChange={(e) => setNewUsername(e.target.value)}
                                         className="form-input username-input"
+                                        placeholder="Enter username"
+                                        autoFocus
                                     />
                                 ) : (
                                     <h2 className="font-fantasy">{user.username}</h2>
@@ -99,7 +116,11 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onNavigate, onUpdateUse
                                 <Button type="button" onClick={handleCancel} variant="secondary">
                                     Cancel
                                 </Button>
-                                <Button type="submit" disabled={!newUsername.trim() || !hasChanges}>
+                                <Button 
+                                    type="submit" 
+                                    disabled={!newUsername.trim() || !hasChanges}
+                                    variant="primary"
+                                >
                                     Save Changes
                                 </Button>
                             </div>
@@ -149,6 +170,14 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onNavigate, onUpdateUse
                                     Update your avatar and name in the main panel. Don&apos;t forget
                                     to save your changes!
                                 </p>
+                                {/* Debug info - remove this in production */}
+                                {process.env.NODE_ENV === 'development' && (
+                                    <div className="mt-2 text-xs text-gray-400">
+                                        <p>Username changed: {newUsername.trim() !== user.username ? 'Yes' : 'No'}</p>
+                                        <p>Avatar changed: {avatarSeed !== currentSeed ? 'Yes' : 'No'}</p>
+                                        <p>Has changes: {hasChanges ? 'Yes' : 'No'}</p>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
