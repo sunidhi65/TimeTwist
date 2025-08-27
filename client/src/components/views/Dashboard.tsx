@@ -14,36 +14,38 @@ const Dashboard: React.FC<DashboardProps> = ({ user, allUsers, onNavigate, onLog
     const topWizards = allUsers.slice(0, 3);
 
     return (
-        <div>
-            <header className="dashboard-header">
-                <div className="dashboard-user-info">
-                    <img src={user.avatar} alt="User Avatar" />
+        <div className="p-6">
+            {/* Header */}
+            <header className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-4">
+                    <img src={user.avatar} alt="User Avatar" className="w-12 h-12 rounded-full border-2 border-rune-gold" />
                     <div>
                         <div className="flex items-center gap-2">
-                            <h1>{user.username}</h1>
-                            <button onClick={() => onNavigate(View.PROFILE)} className="edit-btn">
+                            <h1 className="text-2xl font-bold text-white">{user.username}</h1>
+                            <button onClick={() => onNavigate(View.PROFILE)} className="p-1 hover:text-rune-gold">
                                 <EditIcon />
                             </button>
                         </div>
-                        <p className="level-text">Level {user.level} Sorcerer</p>
+                        <p className="text-purple-300">Level {user.level} Sorcerer</p>
                     </div>
                 </div>
                 <Button onClick={onLogout} variant="secondary">Logout</Button>
             </header>
 
-            <div className="dashboard-grid">
+            {/* Stats + Leaderboard */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
                 {/* Stats Card */}
-                <Card className="dashboard-stats-card">
+                <Card>
                     <h2 className="text-xl font-bold text-rune-gold mb-4">Wizarding Stats</h2>
-                    <div>
-                        <div className="stat-item">
-                           <p>Wizard Points (WP): <span>{user.wizardPoints}</span></p>
+                    <div className="space-y-4">
+                        <div>
+                           <p>Wizard Points (WP): <span className="font-bold">{user.wizardPoints}</span></p>
                         </div>
-                        <div className="stat-item">
+                        <div>
                             <p>Progress to Level {user.level + 1}</p>
-                            <div className="progress-bar-container">
+                            <div className="w-full h-3 bg-purple-900 rounded-md overflow-hidden mt-1">
                                 <div
-                                    className="progress-bar-fill"
+                                    className="h-full bg-rune-gold transition-all"
                                     style={{ width: `${wizardLevelProgress}%` }}
                                 ></div>
                             </div>
@@ -51,20 +53,20 @@ const Dashboard: React.FC<DashboardProps> = ({ user, allUsers, onNavigate, onLog
                     </div>
                 </Card>
                 
-                {/* Leaderboard Preview Card */}
-                <Card className="dashboard-leaderboard-card">
+                {/* Leaderboard Preview */}
+                <Card>
                      <h2 className="text-xl font-bold text-rune-gold mb-4">Hall of Fame</h2>
-                     <div>
+                     <div className="space-y-3">
                         {topWizards.map((wizard, index) => (
-                             <div key={wizard.id} className="leaderboard-item">
-                                 <div className="user-details">
-                                     <span className="rank">{index + 1}.</span>
-                                     <img src={wizard.avatar} alt={wizard.username}/>
-                                     <span className="username">{wizard.username}</span>
+                             <div key={wizard.id} className="flex justify-between items-center">
+                                 <div className="flex items-center gap-2">
+                                     <span className="font-bold">{index + 1}.</span>
+                                     <img src={wizard.avatar} alt={wizard.username} className="w-8 h-8 rounded-full" />
+                                     <span>{wizard.username}</span>
                                  </div>
-                                 <div className="user-stats">
-                                     <p className="points">{wizard.wizardPoints} WP</p>
-                                     <p className="level">Level {wizard.level}</p>
+                                 <div className="text-right">
+                                     <p className="font-semibold">{wizard.wizardPoints} WP</p>
+                                     <p className="text-sm text-purple-300">Level {wizard.level}</p>
                                  </div>
                              </div>
                         ))}
@@ -75,13 +77,14 @@ const Dashboard: React.FC<DashboardProps> = ({ user, allUsers, onNavigate, onLog
                 </Card>
             </div>
 
-
+            {/* Modes Title */}
             <div className="text-center mb-10">
                 <h2 className="text-4xl font-bold font-pixel text-rune-gold">Choose Your Path</h2>
                 <p className="text-purple-300/80 mt-2">The threads of fate await your command.</p>
             </div>
             
-            <div className="dashboard-modes-grid">
+            {/* Modes Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <ModeCard
                     icon={<SpellBookIcon />}
                     title="Time Warp Mode"
@@ -127,13 +130,13 @@ interface ModeCardProps {
 
 const ModeCard: React.FC<ModeCardProps> = ({ icon, title, description, onClick, disabled = false }) => (
     <Card 
-        className={`mode-card card-hover-glow-purple ${disabled ? 'disabled' : ''}`}
+        className={`flex flex-col items-center text-center p-6 cursor-pointer hover:shadow-xl transition-transform transform hover:scale-105 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
         onClick={!disabled ? onClick : undefined}
     >
-        <div className="icon">{icon}</div>
-        <h3 className="font-pixel">{title}</h3>
-        <p>{description}</p>
-        {disabled && <p className="unlock-text">(Complete Time Warp challenges to unlock)</p>}
+        <div className="mb-4">{icon}</div>
+        <h3 className="font-pixel text-lg text-rune-gold mb-2">{title}</h3>
+        <p className="text-sm text-purple-200">{description}</p>
+        {disabled && <p className="mt-2 text-xs text-purple-400">(Complete Time Warp challenges to unlock)</p>}
     </Card>
 );
 
