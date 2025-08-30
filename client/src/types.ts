@@ -159,3 +159,9 @@ export interface ChatbotPageProps {
     user: User;
     onNavigate: (view: View) => void;
 }
+
+// Add this alongside your other interfaces
+export interface BotMessage {
+  role: "user" | "bot";
+  text: string;
+}

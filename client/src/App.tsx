@@ -15,6 +15,7 @@ import ResourcesPage from './components/views/ResourcesPage';
 import SparkleBackground from './components/ui/SparkleBackground';
 import BranchSelectionPage from './components/views/StreamSelectionPage';
 import DuelOfWitsPage from './components/views/DuelOfWitsPage';
+import ChatbotPage from './components/views/ChatbotPage';
 import { MOCK_USERS } from './data/mockUsers';
 import { MOCK_MESSAGES } from './data/mockMessages';
 
@@ -215,6 +216,8 @@ const App: React.FC = () => {
                 return <CommunityPage user={user} allUsers={allUsers} messages={messages} onNavigate={navigateTo} onSendMessage={handleSendMessage} />;
             case View.RESOURCES:
                 return <ResourcesPage user={user} onNavigate={navigateTo} />;
+            case View.CHATBOT:
+                return <ChatbotPage user={user} onNavigate={navigateTo} />;
             default:
                 return <Dashboard user={user} allUsers={allUsers} onNavigate={navigateTo} onLogout={handleLogout} theme={theme} onThemeToggle={handleThemeToggle} />;
         }
