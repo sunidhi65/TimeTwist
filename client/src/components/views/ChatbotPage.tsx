@@ -83,13 +83,15 @@ const ChatbotPage: React.FC<ChatbotPageProps> = ({ user, onNavigate }) => {
     }
   };
 
+
   return (
-    <div className="chatbot-page">
+    <div className="chatbot-page px-6 py-6">
       <Button onClick={() => onNavigate(View.DASHBOARD)} className="mb-8">
-        &larr; Back to Dashboard
+        ← Back to Dashboard
       </Button>
-      <div className="text-center mb-10">
-        <h1 className="text-5xl font-bold font-pixel text-rune-gold">
+
+      <div className="text-center mb-8">
+        <h1 className="text-4xl font-bold font-pixel text-rune-gold drop-shadow-md">
           Oracle's Sanctum
         </h1>
         <p className="text-purple-300/80 mt-2">
@@ -97,51 +99,65 @@ const ChatbotPage: React.FC<ChatbotPageProps> = ({ user, onNavigate }) => {
         </p>
       </div>
 
-      <Card className="chatbot-card">
-        <div className="chat-history">
+      <Card className="chatbot-card p-4 flex flex-col h-[70vh]">
+        {/* Chat history */}
+        <div className="chat-history flex-1 overflow-y-auto pr-2 space-y-4">
           {chatHistory.map((msg, index) => (
             <div
               key={index}
-              className={`chat-message ${
-                msg.role === "user" ? "user-message" : "model-message"
+              className={`flex ${
+                msg.role === "user" ? "justify-end" : "justify-start"
               }`}
             >
-              <div className="chat-bubble">
+              <div
+                className={`max-w-[75%] px-4 py-2 rounded-2xl shadow-md text-sm leading-relaxed
+                  ${
+                    msg.role === "user"
+                      ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white self-end"
+                      : "bg-gray-200 text-gray-900"
+                  }`}
+              >
                 <p
-                  className="font-sans"
-                  dangerouslySetInnerHTML={{
-                    __html: msg.text.replace(/\n/g, "<br />"),
-                  }}
-                ></p>
+                  className="whitespace-pre-wrap"
+                  dangerouslySetInnerHTML={{ __html: msg.text.replace(/\n/g, "<br />") }}
+                />
               </div>
             </div>
           ))}
+
           {isLoading && (
-            <div className="chat-message model-message">
-              <div className="chat-bubble typing-indicator">
-                <span></span>
-                <span></span>
-                <span></span>
+            <div className="flex justify-start">
+              <div className="bg-gray-200 px-4 py-2 rounded-2xl shadow-md flex gap-2">
+                <span className="w-2 h-2 bg-gray-600 rounded-full animate-bounce"></span>
+                <span className="w-2 h-2 bg-gray-600 rounded-full animate-bounce delay-150"></span>
+                <span className="w-2 h-2 bg-gray-600 rounded-full animate-bounce delay-300"></span>
               </div>
             </div>
           )}
           <div ref={messagesEndRef} />
         </div>
-        <div className="chat-input-container">
-          <form onSubmit={handleSendMessage} className="chat-input-form">
-            <input
-              type="text"
-              value={userInput}
-              onChange={(e) => setUserInput(e.target.value)}
-              placeholder="Ask the Archmage a question..."
-              className="chat-input form-input font-sans"
-              disabled={isLoading}
-            />
-            <Button type="submit" disabled={isLoading || !userInput.trim()}>
-              Send
-            </Button>
-          </form>
-        </div>
+
+        {/* Input */}
+        <form
+          onSubmit={handleSendMessage}
+          className="chat-input-form flex items-center gap-2 mt-4"
+        >
+          <input
+            type="text"
+            value={userInput}
+            onChange={(e) => setUserInput(e.target.value)}
+            placeholder="Ask the Archmage a question..."
+            className="flex-1 rounded-full px-4 py-2 border border-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
+            disabled={isLoading}
+          />
+          <Button
+            type="submit"
+            disabled={isLoading || !userInput.trim()}
+            className="px-6 py-2 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md hover:opacity-90"
+          >
+            Send
+          </Button>
+        </form>
       </Card>
     </div>
   );
