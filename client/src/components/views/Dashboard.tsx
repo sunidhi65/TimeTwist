@@ -8,6 +8,7 @@ import EditIcon from '../icons/EditIcon';
 import CommunityIcon from '../icons/CommunityIcon';
 import LibraryIcon from '../icons/LibraryIcon';
 import SwordsIcon from '../icons/SwordIcon';
+import CrystalBallIcon from '../icons/CrystalBallIcon';
 import ThemeToggleButton from '../ui/ThemeToggleButton';
 
 const Dashboard: React.FC<DashboardProps> = ({ user, allUsers, onNavigate, onLogout, theme, onThemeToggle }) => {
@@ -115,6 +116,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user, allUsers, onNavigate, onLog
                     title="Wizard's Library"
                     description="Consult ancient texts, formulas, and guides for your studies."
                     onClick={() => onNavigate(View.RESOURCES)}
+                />
+                 <ModeCard
+                    icon={<CrystalBallIcon />}
+                    title="Oracle's Sanctum"
+                    description="Consult the Archmage with your toughest engineering questions."
+                    onClick={() => onNavigate(View.CHATBOT)}
                 />
             </div>
         </div>

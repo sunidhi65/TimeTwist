@@ -14,6 +14,7 @@ export enum View {
   DUEL_OF_WITS,
   PEER_REVIEW_ARENA,
   MAGIC_ANALYSIS,
+  CHATBOT,
 }
 
 export type Branch = 'CSE' | 'ECE' | 'Mechanical' | 'Civil';
@@ -152,4 +153,9 @@ export interface PeerReviewArenaProps {
 export interface MagicAnalysisPageProps {
     onNavigate: (view: View) => void;
     feedbackHistory: AIFeedback[];
+}
+
+export interface ChatbotPageProps {
+    user: User;
+    onNavigate: (view: View) => void;
 }
