@@ -142,7 +142,7 @@ const ChatbotPage: React.FC<ChatbotPageProps> = ({ user, onNavigate }) => {
         <div ref={messagesEndRef} />
       </main>
 
-      {/* Input */}
+      {/* Input Bar */}
       <footer className="p-4 border-t border-purple-700/50 bg-black/40 backdrop-blur-md">
         <form onSubmit={handleSendMessage} className="flex items-center gap-3">
           <input
