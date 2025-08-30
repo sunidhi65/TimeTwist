@@ -165,3 +165,4 @@ export interface BotMessage {
   role: "user" | "bot";
   text: string;
 }
+

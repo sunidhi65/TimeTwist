@@ -1,118 +1,150 @@
-// src/components/views/ChatbotPage.tsx
-import React, { useState } from "react";
-import { ChatbotPageProps, BotMessage, View } from "../../types";
+import React, { useState, useEffect, useRef } from "react";
+import { ChatbotPageProps, View } from "../../types";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import Button from "../ui/Button";
 import Card from "../ui/Card";
-import { evaluateExplanation, AIFeedback } from "../../../services/geminiService";
+
+// Define a simple message type for the history
+interface ChatHistoryMessage {
+  role: "user" | "model";
+  text: string;
+}
+
+// ✅ Initialize Gemini with your API key
+const genAI = new GoogleGenerativeAI(
+  "AIzaSyBkT4mTTBGrGHNg-Ixa46CEAU9qYKgxwYo"
+);
 
 const ChatbotPage: React.FC<ChatbotPageProps> = ({ user, onNavigate }) => {
-  const [messages, setMessages] = useState<BotMessage[]>([
-    {
-      role: "bot",
-      text: `Welcome, ${user.username}. I am the Archmage Mentor. Share your reasoning and I will guide you—without giving away answers.`,
-    },
-  ]);
-  const [input, setInput] = useState("");
+  const [chatHistory, setChatHistory] = useState<ChatHistoryMessage[]>([]);
+  const [userInput, setUserInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const handleSend = async () => {
-    const trimmed = input.trim();
-    if (!trimmed || isLoading) return;
+  // Static welcome message
+  useEffect(() => {
+    setChatHistory([
+      {
+        role: "model",
+        text: `Greetings, ${user.username}. I am the Archmage Mentor of TimeTwist. Ask, and I shall help you unravel the threads of knowledge.`,
+      },
+    ]);
+  }, [user.username]);
 
-    const userMsg: BotMessage = { role: "user", text: trimmed };
-    setMessages((prev) => [...prev, userMsg]);
-    setInput("");
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(scrollToBottom, [chatHistory]);
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmedInput = userInput.trim();
+    if (!trimmedInput || isLoading) return;
+
+    // Add user message to UI
+    const newUserMessage: ChatHistoryMessage = {
+      role: "user",
+      text: trimmedInput,
+    };
+    setChatHistory((prev) => [...prev, newUserMessage]);
+    setUserInput("");
     setIsLoading(true);
 
     try {
-      // We don't need a real answer string; your evaluator scores the explanation itself.
-      const fb: AIFeedback = await evaluateExplanation("", trimmed);
+      // ✅ Call Gemini API
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const result = await model.generateContent({
+        contents: [
+          {
+            role: "user",
+            parts: [{ text: trimmedInput }],
+          },
+        ],
+      });
 
-      // Build a readable bot reply from feedback
-      const suggestions =
-        fb.improvements && fb.improvements.length
-          ? fb.improvements.map((s, i) => `• ${s}`).join("\n")
-          : "• Keep refining your reasoning with clear steps and logical connectors.";
+      const responseText = result.response.text();
 
-      const botReply: BotMessage = {
-        role: "bot",
-        text:
-          `${fb.title}\n` +
-          `Score: ${fb.score}/10\n\n` +
-          `${fb.strengths}\n\n` +
-          `Suggestions:\n${suggestions}`,
+      const modelMessage: ChatHistoryMessage = {
+        role: "model",
+        text: responseText,
       };
 
-      setMessages((prev) => [...prev, botReply]);
-    } catch (err) {
-      console.error("Local evaluation failed:", err);
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "bot",
-          text:
-            "A disturbance in the aether disrupted the evaluation. Please try again.",
-        },
-      ]);
+      setChatHistory((prev) => [...prev, modelMessage]);
+    } catch (error) {
+      console.error("Error sending message to Gemini:", error);
+      const errorMessage: ChatHistoryMessage = {
+        role: "model",
+        text: "⚠️ The Archmage’s connection to the arcane failed. Try again.",
+      };
+      setChatHistory((prev) => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
-
   return (
-    <div className="flex flex-col h-screen bg-gray-900 text-white">
-      {/* Header */}
-      <div className="p-4 bg-gray-800 flex justify-between items-center">
-        <h1 className="text-xl font-bold">🧙 Oracle’s Sanctum</h1>
-        <Button onClick={() => onNavigate(View.DASHBOARD)}>&larr; Back</Button>
+    <div className="chatbot-page">
+      <Button onClick={() => onNavigate(View.DASHBOARD)} className="mb-8">
+        &larr; Back to Dashboard
+      </Button>
+      <div className="text-center mb-10">
+        <h1 className="text-5xl font-bold font-pixel text-rune-gold">
+          Oracle's Sanctum
+        </h1>
+        <p className="text-purple-300/80 mt-2">
+          The Archmage Mentor is here to answer your questions.
+        </p>
       </div>
 
-      {/* Chat Window */}
-      <div className="flex-1 p-4 overflow-y-auto space-y-3">
-        {messages.map((m, i) => (
-          <Card
-            key={i}
-            className={`p-3 rounded-2xl max-w-xl ${
-              m.role === "user"
-                ? "bg-green-600 self-end ml-auto"
-                : "bg-purple-700 self-start mr-auto"
-            } whitespace-pre-wrap`}
-          >
-            {m.text}
-          </Card>
-        ))}
-
-        {isLoading && (
-          <Card className="p-3 rounded-2xl max-w-xl bg-purple-800 self-start mr-auto">
-            <span className="opacity-80">The Oracle is contemplating…</span>
-          </Card>
-        )}
-      </div>
-
-      {/* Input */}
-      <div className="p-4 flex bg-gray-800 gap-2">
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          className="flex-1 p-2 rounded-lg text-black"
-          placeholder="Explain your reasoning or ask for conceptual guidance…"
-          disabled={isLoading}
-        />
-        <Button onClick={handleSend} disabled={isLoading || !input.trim()}>
-          Send
-        </Button>
-      </div>
+      <Card className="chatbot-card">
+        <div className="chat-history">
+          {chatHistory.map((msg, index) => (
+            <div
+              key={index}
+              className={`chat-message ${
+                msg.role === "user" ? "user-message" : "model-message"
+              }`}
+            >
+              <div className="chat-bubble">
+                <p
+                  className="font-sans"
+                  dangerouslySetInnerHTML={{
+                    __html: msg.text.replace(/\n/g, "<br />"),
+                  }}
+                ></p>
+              </div>
+            </div>
+          ))}
+          {isLoading && (
+            <div className="chat-message model-message">
+              <div className="chat-bubble typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+        <div className="chat-input-container">
+          <form onSubmit={handleSendMessage} className="chat-input-form">
+            <input
+              type="text"
+              value={userInput}
+              onChange={(e) => setUserInput(e.target.value)}
+              placeholder="Ask the Archmage a question..."
+              className="chat-input form-input font-sans"
+              disabled={isLoading}
+            />
+            <Button type="submit" disabled={isLoading || !userInput.trim()}>
+              Send
+            </Button>
+          </form>
+        </div>
+      </Card>
     </div>
   );
 };
 
 export default ChatbotPage;
-
