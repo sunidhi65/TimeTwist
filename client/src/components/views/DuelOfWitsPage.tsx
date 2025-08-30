@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { DuelOfWitsPageProps, View, User, Challenge } from '../../types';
-import { challengesBySubject, COMMON_SUBJECTS } from '../../data/challenges';
+import { challengesBySubject, BRANCH_SUBJECTS } from '../../data/challenges';
 import { evaluateExplanation, AIFeedback } from '../../../services/geminiService';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
@@ -32,8 +32,9 @@ const DuelOfWitsPage: React.FC<DuelOfWitsPageProps> = ({ user, allUsers, onNavig
             const randomOpponent = potentialOpponents[Math.floor(Math.random() * potentialOpponents.length)];
             setOpponent(randomOpponent);
             
-            // Find a random challenge from subjects common to all branches to ensure fairness.
-            const randomSubject = COMMON_SUBJECTS[Math.floor(Math.random() * COMMON_SUBJECTS.length)];
+            // Find a random challenge from the user's branch
+            const userSubjects = BRANCH_SUBJECTS[user.branch!];
+            const randomSubject = userSubjects[Math.floor(Math.random() * userSubjects.length)];
             const subjectChallenges = challengesBySubject[randomSubject];
             const randomChallenge = subjectChallenges[Math.floor(Math.random() * subjectChallenges.length)];
             setChallenge(randomChallenge);
@@ -118,6 +119,11 @@ const DuelOfWitsPage: React.FC<DuelOfWitsPageProps> = ({ user, allUsers, onNavig
         setWinner(null);
         setIsOpponentRevealed(false);
     };
+
+    const handleForfeit = useCallback(() => {
+        onDuelEnd(LOSS_POINTS);
+        onNavigate(View.DASHBOARD);
+    }, [onDuelEnd, onNavigate]);
 
     const minutes = Math.floor(timeLeft / 60);
     const seconds = timeLeft % 60;
@@ -206,6 +212,9 @@ const DuelOfWitsPage: React.FC<DuelOfWitsPageProps> = ({ user, allUsers, onNavig
 
     const renderResults = () => (
         <div>
+            <Button onClick={() => onNavigate(View.DASHBOARD)} className="mb-8">
+                &larr; Back to Dashboard
+            </Button>
             <div className="text-center mb-8">
                  <h1 className="text-5xl font-bold font-pixel text-rune-gold">
                     {winner === 'user' ? 'VICTORY!' : winner === 'opponent' ? 'DEFEAT' : 'A DRAW!'}
@@ -258,9 +267,16 @@ const DuelOfWitsPage: React.FC<DuelOfWitsPageProps> = ({ user, allUsers, onNavig
     
     return (
         <div>
-            {(duelState === 'lobby' || duelState === 'results') && (
-                <Button onClick={() => onNavigate(View.DASHBOARD)} className="mb-8">
-                    &larr; Back to Dashboard
+            {/* The results view has its own back button, so we exclude it here to avoid duplication. */}
+            {(duelState === 'lobby' || duelState === 'matching' || duelState === 'active') && (
+                 <Button
+                    onClick={duelState === 'active' ? handleForfeit : () => onNavigate(View.DASHBOARD)}
+                    className="mb-8"
+                    variant={duelState === 'active' ? 'secondary' : 'primary'}
+                >
+                    {duelState === 'lobby' && <>&larr; Back to Dashboard</>}
+                    {duelState === 'matching' && <>&larr; Cancel Matchmaking</>}
+                    {duelState === 'active' && <>&larr; Forfeit Duel</>}
                 </Button>
             )}
             <div className="animate-fade-in">
